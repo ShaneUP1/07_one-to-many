@@ -123,7 +123,7 @@ describe('app endpoint', () => {
     it('GETs all farmshares', async () => {
         const newVeggie = await Veggie.insert({ name: 'cucumber' });
 
-        const newFarmshare = await Promise.all([
+        const newFarmshares = await Promise.all([
             { name: 'Smith', veggieId: newVeggie.id },
             { name: 'Elvis', veggieId: newVeggie.id },
             { name: 'Big Boi', veggieId: newVeggie.id }
@@ -132,7 +132,8 @@ describe('app endpoint', () => {
         const res = await request(app)
             .get('/farmshares');
 
-        expect(res.body).toEqual(newFarmshare);
+        expect(res.body).toEqual(expect.arrayContaining(newFarmshares));
+        expect(res.body).toHaveLength(newFarmshares.length);
     });
 
     it('updates an existing farmshare by id via PUT', async () => {
