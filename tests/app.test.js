@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 const fs = require('fs');
 const request = require('supertest');
 const app = require('../lib/app');
@@ -27,13 +28,22 @@ describe('app endpoint', () => {
         });
     });
 
-    it('GETs a single veggie by Id', async () => {
+    it('GETs a single veggie by Id and associated farmshares', async () => {
         const newVeggie = await Veggie.insert({ name: 'cucumber' });
 
-        const response = await request(app)
-            .get('/veggies/1');
+        const newFarmshares = await Promise.all([
+            { name: 'Smith', veggieId: newVeggie.id },
+            { name: 'Elvis', veggieId: newVeggie.id },
+            { name: 'Big Boi', veggieId: newVeggie.id }
+        ].map(farmshare => Farmshare.insert(farmshare)));
 
-        expect(response.body).toEqual(newVeggie);
+        const response = await request(app)
+            .get(`/veggies/${newVeggie.id}`);
+
+        expect(response.body).toEqual({
+            ...newVeggie,
+            farmshares: expect.arrayContaining(newFarmshares)
+        });
     });
 
     it('GETs all veggies', async () => {
